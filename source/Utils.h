@@ -13,8 +13,38 @@ namespace dae
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//todo W1
-			assert(false && "No Implemented Yet!");
-			return false;
+			float A = (Vector3::Dot(ray.direction, ray.direction));
+			float B = (Vector3::Dot((2 * ray.direction), ray.origin - sphere.origin));
+			float C = (Vector3::Dot((ray.origin - sphere.origin), (ray.origin - sphere.origin)) - (sphere.radius * sphere.radius));
+			float D = ((B * B) - (4 * A * C));
+			// D == 0 means 1 hit 
+			if (AreEqual(D, 0.f))
+			{
+				hitRecord.didHit = true;
+
+				hitRecord.t = -B / (2 * A);
+
+				hitRecord.materialIndex = sphere.materialIndex;
+			}
+			else if (D > 0.f) // check if hit 
+			{
+				D = sqrt(D);
+				float t1, t2;
+				t1 = (-B + D) / (2 * A);
+				t2 = (-B - D) / (2 * A);
+				if (t1 > t2)
+				{
+					hitRecord.t = t2; // take closest hit
+				}
+				else
+				{
+					hitRecord.t = t1;
+				}
+				hitRecord.materialIndex = sphere.materialIndex;
+				hitRecord.didHit = true;
+
+			}
+			return hitRecord.didHit;
 		}
 
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray)
@@ -128,7 +158,7 @@ namespace dae
 				//read till end of line and ignore all remaining chars
 				file.ignore(1000, '\n');
 
-				if (file.eof()) 
+				if (file.eof())
 					break;
 			}
 
@@ -143,7 +173,7 @@ namespace dae
 				Vector3 edgeV0V2 = positions[i2] - positions[i0];
 				Vector3 normal = Vector3::Cross(edgeV0V1, edgeV0V2);
 
-				if(isnan(normal.x))
+				if (isnan(normal.x))
 				{
 					int k = 0;
 				}

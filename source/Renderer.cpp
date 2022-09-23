@@ -12,7 +12,7 @@
 
 using namespace dae;
 
-Renderer::Renderer(SDL_Window * pWindow) :
+Renderer::Renderer(SDL_Window* pWindow) :
 	m_pWindow(pWindow),
 	m_pBuffer(SDL_GetWindowSurface(pWindow))
 {
@@ -31,12 +31,30 @@ void Renderer::Render(Scene* pScene) const
 	{
 		for (int py{}; py < m_Height; ++py)
 		{
-			float gradient = px / static_cast<float>(m_Width);
-			gradient += py / static_cast<float>(m_Width);
-			gradient /= 2.0f;
+			float aspectRatio{ float(m_Width) / float(m_Height) };
 
-			ColorRGB finalColor{ gradient, gradient, gradient };
+			Vector3 rayDirection;
+			float offset{ 0.5f };
+			rayDirection.x = ((2.f * (px + offset) / float(m_Width)) - 1) * aspectRatio;
+			rayDirection.y = (1.f - 2.f * (py + offset) / m_Height);
+			rayDirection.z = 1;
 
+			rayDirection.Normalize();
+
+			Ray viewRay{ Vector3{0,0,0},rayDirection };
+
+			ColorRGB finalColor{};
+
+			HitRecord closestHit{};
+
+			Sphere testSphere{ Vector3{0.f,0.f,100.f},50.f,0 };
+			GeometryUtils::HitTest_Sphere(testSphere, viewRay, closestHit);
+			if (closestHit.didHit)
+			{
+				/*finalColor = materials[closestHit.materialIndex]->Shade();*/
+				const float scaled_t = (closestHit.t - 50.f) / 40.f;
+				finalColor = { scaled_t,scaled_t ,scaled_t };
+			}
 			//Update Color in Buffer
 			finalColor.MaxToOne();
 
@@ -46,6 +64,17 @@ void Renderer::Render(Scene* pScene) const
 				static_cast<uint8_t>(finalColor.b * 255));
 		}
 	}
+
+	//float dotResult{};
+
+	//dotResult = Vector3::Dot(Vector3::UnitX, Vector3::UnitX);
+	//dotResult = Vector3::Dot(Vector3::UnitX, -Vector3::UnitX);
+	//dotResult = Vector3::Dot(Vector3::UnitX, Vector3::UnitY);
+
+
+	//Vector3 crossResult{};
+	//crossResult = Vector3::Cross(Vector3::UnitZ, Vector3::UnitX);
+	//crossResult = Vector3::Cross(Vector3::UnitX, Vector3::UnitZ); 
 
 	//@END
 	//Update SDL Surface
