@@ -105,8 +105,9 @@ namespace dae {
 	Matrix Matrix::CreateTranslation(float x, float y, float z)
 	{
 		//todo W1
-		assert(false && "Not Implemented Yet");
-		return {};
+		Vector3 t = Vector3{ x,y,z };
+		Matrix translationMatrix = Matrix{ Vector3::UnitX,Vector3::UnitY, Vector3::UnitZ,t };
+		return {translationMatrix};
 	}
 
 	Matrix Matrix::CreateTranslation(const Vector3& t)
@@ -117,29 +118,35 @@ namespace dae {
 	Matrix Matrix::CreateRotationX(float pitch)
 	{
 		//todo W1
-		assert(false && "Not Implemented Yet");
-		return {};
+		Vector3 vY = { 0, cosf(pitch), -sinf(pitch) };
+		Vector3 vZ = { 0, sinf(pitch), cosf(pitch) };
+		Matrix pitchMatrix = Matrix{ Vector3::UnitX,vY,vZ,Vector3::Zero};
+		return {pitchMatrix};
 	}
 
 	Matrix Matrix::CreateRotationY(float yaw)
 	{
-		//todo W1
-		assert(false && "Not Implemented Yet");
-		return {};
+		Vector3 vX = { cosf(yaw),0.f,-sinf(yaw) };
+		Vector3 vZ = { sinf(yaw),0.f,cos(yaw) };
+		Matrix yawMatrix = Matrix{ vX,Vector3::UnitY,vZ,Vector3::Zero };
+		return {yawMatrix};
 	}
 
 	Matrix Matrix::CreateRotationZ(float roll)
 	{
-		//todo W1
-		assert(false && "Not Implemented Yet");
-		return {};
+		Vector3 vX = { cosf(roll),-sinf(roll),0.f };
+		Vector3 vY = { sinf(roll),cosf(roll),0.f };
+		Matrix rollMatrix = Matrix{ vX,vY,Vector3::UnitZ ,Vector3::Zero};
+		return {rollMatrix};
 	}
 
 	Matrix Matrix::CreateRotation(const Vector3& r)
 	{
-		//todo W1
-		assert(false && "Not Implemented Yet");
-		return {};
+		Matrix pitch = CreateRotationX(r.x);
+		Matrix yaw = CreateRotationY(r.y);
+		Matrix roll = CreateRotationZ(r.z);
+		Matrix rotation = pitch * yaw * roll;
+		return {rotation};
 	}
 
 	Matrix Matrix::CreateRotation(float pitch, float yaw, float roll)
@@ -150,8 +157,8 @@ namespace dae {
 	Matrix Matrix::CreateScale(float sx, float sy, float sz)
 	{
 		//todo W1
-		assert(false && "Not Implemented Yet");
-		return {};
+		Matrix scale = Matrix{ {sx,0,0},{0,sy,0},{0,0,sz},Vector3::Zero };
+		return { scale };
 	}
 
 	Matrix Matrix::CreateScale(const Vector3& s)

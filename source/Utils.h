@@ -20,11 +20,21 @@ namespace dae
 			// D == 0 means 1 hit 
 			if (AreEqual(D, 0.f))
 			{
-				hitRecord.didHit = true;
-
 				hitRecord.t = -B / (2 * A);
-
-				hitRecord.materialIndex = sphere.materialIndex;
+				if (ray.min < hitRecord.t && hitRecord.t < ray.max)
+				{
+					if (ignoreHitRecord == true)
+					{
+						return true;
+					}
+					hitRecord.origin = ray.origin + (ray.direction * hitRecord.t);
+					hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
+					hitRecord.materialIndex = sphere.materialIndex;
+					hitRecord.didHit = true;
+					return true;
+				}
+				
+				
 			}
 			else if (D > 0.f) // check if hit 
 			{
@@ -32,7 +42,12 @@ namespace dae
 				float t1, t2;
 				t1 = (-B + D) / (2 * A);
 				t2 = (-B - D) / (2 * A);
-				if (t1 > t2)
+				
+				if (t1 <0.f && t2 < 0.f)
+				{
+					return false;
+				}
+				if ((t1 > t2 || t1 < 0) && t2 > 0 )
 				{
 					hitRecord.t = t2; // take closest hit
 				}
@@ -40,11 +55,20 @@ namespace dae
 				{
 					hitRecord.t = t1;
 				}
-				hitRecord.materialIndex = sphere.materialIndex;
-				hitRecord.didHit = true;
-
+				if (ray.min < hitRecord.t && hitRecord.t < ray.max)
+				{
+					if (ignoreHitRecord == true)
+					{
+						return true;
+					}
+				  hitRecord.origin = ray.origin + (ray.direction * hitRecord.t);
+				  hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
+				  hitRecord.materialIndex = sphere.materialIndex;
+				  hitRecord.didHit = true;
+				  return true;
+				}
 			}
-			return hitRecord.didHit;
+			return false;
 		}
 
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray)
@@ -58,9 +82,15 @@ namespace dae
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//todo W1
-			float temp = Vector3::Dot(plane.origin - ray.origin, plane.origin) / Vector3::Dot(ray.direction, plane.origin);
+			float temp = Vector3::Dot(plane.origin - ray.origin, plane.normal) / Vector3::Dot(ray.direction, plane.normal);
 			if (ray.min <= temp && temp <= ray.max)
 			{
+				if (ignoreHitRecord == true)
+				{
+					return true;
+				}
+				hitRecord.normal = plane.normal;
+				hitRecord.origin = ray.origin + (ray.direction * temp);
 				hitRecord.t = temp;
 				hitRecord.materialIndex = plane.materialIndex;
 				hitRecord.didHit = true;
@@ -111,9 +141,15 @@ namespace dae
 		//Direction from target to light
 		inline Vector3 GetDirectionToLight(const Light& light, const Vector3 origin)
 		{
-			//todo W3
-			assert(false && "No Implemented Yet!");
-			return {};
+			if (light.type == LightType::Point)
+			{
+				return { light.origin - origin};
+			}
+			else
+			{
+				return{};
+			}
+			
 		}
 
 		inline ColorRGB GetRadiance(const Light& light, const Vector3& target)
