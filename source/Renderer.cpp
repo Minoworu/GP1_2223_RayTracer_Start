@@ -9,6 +9,7 @@
 #include "Material.h"
 #include "Scene.h"
 #include "Utils.h"
+#include <iostream>
 
 using namespace dae;
 
@@ -26,7 +27,7 @@ void Renderer::Render(Scene* pScene) const
 	Camera& camera = pScene->GetCamera();
 	auto& materials = pScene->GetMaterials();
 	auto& lights = pScene->GetLights();
-	float FOV =  tanf( TO_RADIANS *(camera.fovAngle / 2.f));
+	float FOV = tanf(TO_RADIANS * (camera.fovAngle / 2.f));
 	const Matrix cameraToWorld{ camera.CalculateCameraToWorld() };
 
 	for (int px{}; px < m_Width; ++px)
@@ -53,23 +54,66 @@ void Renderer::Render(Scene* pScene) const
 
 			if (closestHit.didHit)
 			{
-				finalColor = materials[closestHit.materialIndex]->Shade();
-				closestHit.origin += closestHit.normal * 0.1f;
+				// Not Shadowed
+				/*finalColor = materials[closestHit.materialIndex]->Shade();*/
+				closestHit.origin += closestHit.normal * 0.001f;
+
+
+				// Shadowed
+
 				for (int i = 0; i < lights.size(); i++)
 				{
 					Vector3 lightHit = LightUtils::GetDirectionToLight(lights[i], closestHit.origin);
+					float lightNormalize = lightHit.Normalize() * 0.7f;
 
-					Ray shadowRay;
-					shadowRay.origin = closestHit.origin;
-					shadowRay.direction = lightHit;
-					shadowRay.direction.Normalize();
-					shadowRay.max = lightHit.Magnitude();
-					if (pScene->DoesHit(shadowRay))
+					if (m_ShadowsEnabled)
 					{
-						finalColor *= 0.5f;
+						Ray shadowRay;
+						shadowRay.origin = closestHit.origin;
+						shadowRay.direction = lightHit;
+						shadowRay.max = lightNormalize;
+						if (pScene->DoesHit(shadowRay))
+						{
+							finalColor *= 0.9f;
+							continue;
+						}
 					}
-					
+					switch (m_CurrentLightingMode)
+					{
+					case dae::Renderer::LightingMode::OberservedArea:
+					{
+						float observedArea = Vector3::Dot(closestHit.normal, lightHit);
+						if (observedArea > 0)
+						{
+							finalColor += ColorRGB{ 1,1,1 } *observedArea;
+						}
+					}
+					break;
+
+					case dae::Renderer::LightingMode::Radiance:
+					{
+						finalColor += LightUtils::GetRadiance(lights[i], closestHit.origin);
+					}
+					break;
+					case dae::Renderer::LightingMode::BRDF:
+					{
+						finalColor += materials[closestHit.materialIndex]->Shade(closestHit,lightHit, rayDirection);
+					}
+					break;
+					case dae::Renderer::LightingMode::Combined:
+					{
+						float observedArea = Vector3::Dot(closestHit.normal, lightHit);
+						if (observedArea > 0)
+						{
+							finalColor += LightUtils::GetRadiance(lights[i],closestHit.origin) * observedArea * materials[closestHit.materialIndex]->Shade(closestHit, lightHit, rayDirection);
+						}
+
+					}
+					break;
+					}
+
 				}
+
 			}
 			//Update Color in Buffer
 			finalColor.MaxToOne();
@@ -100,4 +144,15 @@ void Renderer::Render(Scene* pScene) const
 bool Renderer::SaveBufferToImage() const
 {
 	return SDL_SaveBMP(m_pBuffer, "RayTracing_Buffer.bmp");
+}
+
+void dae::Renderer::ToggleShadows()
+{
+	m_ShadowsEnabled = !m_ShadowsEnabled;
+}
+
+void dae::Renderer::CycleLightingMode()
+{
+	m_CurrentLightingMode = static_cast<LightingMode>((static_cast<int>(m_CurrentLightingMode) + 1) % 4);
+	std::cout << "Current light mode is " << std::to_string(int(m_CurrentLightingMode)) << '\n';
 }

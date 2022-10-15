@@ -67,7 +67,7 @@ namespace dae
 			origin += right * -speed * pKeyboardState[SDL_SCANCODE_A] * deltaTime;
 
 			// VERTICAL INPUT
-			if (mouseState == (SDL_BUTTON_LMASK ^ SDL_BUTTON_RMASK))
+			if (mouseState == (SDL_BUTTON_LMASK | SDL_BUTTON_RMASK))
 			{
 				origin += up * speed * float(mouseX) * 0.05f;
 				origin += up * -speed * float(mouseY) * 0.05f;
