@@ -16,15 +16,15 @@ namespace dae
 			//todo: W3
 			ColorRGB rho = cd * kd;
 			ColorRGB final = rho / float(M_PI);
-			return {final};
+			return { final };
 		}
 
 		static ColorRGB Lambert(const ColorRGB& kd, const ColorRGB& cd)
 		{
 			//todo: W3
 			ColorRGB rho = cd * kd;
-			ColorRGB final=  rho / float(M_PI);
-			return {final};
+			ColorRGB final = rho / float(M_PI);
+			return { final };
 		}
 
 		/**
@@ -40,14 +40,11 @@ namespace dae
 		{
 			//todo: W3
 			// invert light and view 
-			Vector3 r = l.Reflect(l,n);
+			Vector3 r = l.Reflect(l, n);
 			r.Normalize();
-			float alpha = Vector3::Dot(r, v);
-			if (alpha > 0 )
-			{
-				float specularReflection = ks * (powf(alpha, exp));
-				return { specularReflection,specularReflection,specularReflection };
-			}
+			float alpha = std::max(Vector3::Dot(r, v), 0.f);
+			float specularReflection = ks * (powf(alpha, exp));
+			return { specularReflection,specularReflection,specularReflection };
 			return ColorRGB{};
 		}
 
@@ -61,9 +58,10 @@ namespace dae
 		static ColorRGB FresnelFunction_Schlick(const Vector3& h, const Vector3& v, const ColorRGB& f0)
 		{
 			//todo: W3
-
-			ColorRGB fresnel = f0 + (ColorRGB{ 1,1,1 } - f0) * powf((1 - Vector3::Dot(h,v)), 5);
-			return {fresnel};
+			float dot = std::max(Vector3::Dot(h, v),0.f);
+			ColorRGB fresnel = f0 + (ColorRGB{ 1,1,1 } - f0) * powf((1 - dot), 5);
+			/*ColorRGB fresnel = ColorRGB::Lerp(f0, ColorRGB{ 1,1,1 }, powf((1 - dot), 5));*/
+			return { fresnel };
 		}
 
 		/**
@@ -78,10 +76,10 @@ namespace dae
 			//todo: W3
 			float alpha = roughness * roughness;
 			float alphaSq = alpha * alpha;
-			float dot = Vector3::Dot(n, h);
+			float dot = std::max(Vector3::Dot(n, h),0.f);
 			float dotSq = dot * dot;
-			float normalDist = alphaSq / (float(M_PI) *(dotSq * (alphaSq - 1) + 1) * (dotSq * (alphaSq - 1) + 1));
-			return {normalDist};
+			float normalDist = alphaSq / (float(M_PI) * (dotSq * (alphaSq - 1) + 1) * (dotSq * (alphaSq - 1) + 1));
+			return { normalDist };
 		}
 
 
@@ -95,10 +93,10 @@ namespace dae
 		static float GeometryFunction_SchlickGGX(const Vector3& n, const Vector3& v, float roughness)
 		{
 			//todo: W3
-			float dot = Vector3::Dot(n, v);
+			float dot = std::max(Vector3::Dot(n, v), 0.f);
 			float k = roughness * roughness;
 			float schlick = dot / (dot * (1 - k) + k);
-			return {schlick};
+			return { schlick };
 		}
 
 		/**
@@ -114,7 +112,7 @@ namespace dae
 			//todo: W3
 			float k = roughness * roughness;
 			float smith = GeometryFunction_SchlickGGX(n, v, k) * GeometryFunction_SchlickGGX(n, l, k);
-			return {smith};
+			return { smith };
 		}
 
 	}

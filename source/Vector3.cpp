@@ -68,7 +68,7 @@ namespace dae {
 
 	Vector3 Vector3::Reflect(const Vector3& v1, const Vector3& v2)
 	{
-		return v1 - (2.f * Vector3::Dot(v1, v2) * v2);
+		return v1 - (2.f * std::max(Vector3::Dot(v1, v2),0.f) * v2);
 	}
 
 	Vector4 Vector3::ToPoint4() const

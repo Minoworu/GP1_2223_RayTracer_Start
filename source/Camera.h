@@ -42,9 +42,9 @@ namespace dae
 			up = Vector3::Cross(forward, right);
 			up = up.Normalized();
 
-			Matrix CameraToWorld = Matrix{ right,up,forward,origin };
+			cameraToWorld = Matrix{ right,up,forward,origin };
 
-			return { CameraToWorld };
+			return cameraToWorld ;
 		}
 
 		void Update(Timer* pTimer)
