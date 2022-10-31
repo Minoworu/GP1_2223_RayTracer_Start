@@ -141,148 +141,69 @@ namespace dae
 			}
 
 			switch (currentCullMode)
-			{
 			case dae::TriangleCullMode::FrontFaceCulling:
 			{
-				{
-					if (viewDot > 0)
-					{
-						return false;
-					}
-					Vector3 center = (triangle.v0 + triangle.v1 + triangle.v2) / 3.f;
-					Vector3 L = center - ray.origin;
-					float t = Vector3::Dot(L, normal) / Vector3::Dot(ray.direction, normal);
-					if (ray.min >= t && t >= ray.max)
-					{
-						return false;
-					}
-					Vector3 p = ray.origin + t * ray.direction;
-					Vector3 pointToSide = p - triangle.v0;
-					Vector3 edgeA = a;
-					if (Vector3::Dot(normal, Vector3::Cross(edgeA, pointToSide)) < 0)
-					{
-						return false;
-					}
-					Vector3 edgeB = triangle.v2 - triangle.v1;
-					pointToSide = p - triangle.v1;
-					if (Vector3::Dot(normal, Vector3::Cross(edgeB, pointToSide)) < 0)
-					{
-						return false;
-					}
-					Vector3 edgeC = triangle.v0 - triangle.v2;
-					pointToSide = p - triangle.v2;
-					if (Vector3::Dot(normal, Vector3::Cross(edgeC, pointToSide)) < 0)
-					{
-						return false;
-					}
-					if (ignoreHitRecord)
-					{
-						return true;
-					}
-					hitRecord.materialIndex = triangle.materialIndex;
-					hitRecord.normal = triangle.normal;
-					hitRecord.origin = p;
-					hitRecord.t = t;
-					hitRecord.didHit = true;
-					return true;
-					break;
-				}
-				// --------------------------------------------------------------------------------------------------------------
-				// --------------------------------------------------------------------------------------------------------------
-				// --------------------------------------------------------------------------------------------------------------
-
-			case dae::TriangleCullMode::BackFaceCulling:
-			{
-
 
 				if (viewDot < 0)
 				{
 					return false;
 				}
-				Vector3 center = (triangle.v0 + triangle.v1 + triangle.v2) / 3.f;
-				Vector3 L = center - ray.origin;
-				float t = Vector3::Dot(L, normal) / Vector3::Dot(ray.direction, normal);
-				if (ray.min >= t && t >= ray.max)
-				{
-					return false;
-				}
-				Vector3 p = ray.origin + t * ray.direction;
-				Vector3 pointToSide = p - triangle.v0;
-				Vector3 edgeA = a;
-				if (Vector3::Dot(normal, Vector3::Cross(edgeA, pointToSide)) < 0)
-				{
-					return false;
-				}
-				Vector3 edgeB = triangle.v2 - triangle.v1;
-				pointToSide = p - triangle.v1;
-				if (Vector3::Dot(normal, Vector3::Cross(edgeB, pointToSide)) < 0)
-				{
-					return false;
-				}
-				Vector3 edgeC = triangle.v0 - triangle.v2;
-				pointToSide = p - triangle.v2;
-				if (Vector3::Dot(normal, Vector3::Cross(edgeC, pointToSide)) < 0)
-				{
-					return false;
-				}
-				if (ignoreHitRecord)
-				{
-					return true;
-				}
-				hitRecord.materialIndex = triangle.materialIndex;
-				hitRecord.normal = triangle.normal;
-				hitRecord.origin = p;
-				hitRecord.t = t;
-				hitRecord.didHit = true;
-				return true;
+
 				break;
-			}
-			// --------------------------------------------------------------------------------------------------------------
-			// --------------------------------------------------------------------------------------------------------------
-			// --------------------------------------------------------------------------------------------------------------
+			case dae::TriangleCullMode::BackFaceCulling:
+
+
+
+				if (viewDot > 0)
+				{
+					return false;
+				}
+
+				break;
 			case dae::TriangleCullMode::NoCulling:
 
 
-				Vector3 center = (triangle.v0 + triangle.v1 + triangle.v2) / 3.f;
-				Vector3 L = center - ray.origin;
-				float t = Vector3::Dot(L, normal) / Vector3::Dot(ray.direction, normal);
-				if (ray.min >= t && t >= ray.max)
-				{
-					return false;
-				}
-				Vector3 p = ray.origin + t * ray.direction;
-				Vector3 pointToSide = p - triangle.v0;
-				Vector3 edgeA = a;
-				if (Vector3::Dot(normal, Vector3::Cross(edgeA, pointToSide)) < 0)
-				{
-					return false;
-				}
-				Vector3 edgeB = triangle.v2 - triangle.v1;
-				pointToSide = p - triangle.v1;
-				if (Vector3::Dot(normal, Vector3::Cross(edgeB, pointToSide)) < 0)
-				{
-					return false;
-				}
-				Vector3 edgeC = triangle.v0 - triangle.v2;
-				pointToSide = p - triangle.v2;
-				if (Vector3::Dot(normal, Vector3::Cross(edgeC, pointToSide)) < 0)
-				{
-					return false;
-				}
-				if (ignoreHitRecord)
-				{
-					return true;
-				}
-				hitRecord.materialIndex = triangle.materialIndex;
-				hitRecord.normal = triangle.normal;
-				hitRecord.origin = p;
-				hitRecord.t = t;
-				hitRecord.didHit = true;
+				break;
+
+			}
+			Vector3 center = (triangle.v0 + triangle.v1 + triangle.v2) / 3.f;
+			Vector3 L = center - ray.origin;
+			float t = Vector3::Dot(L, normal) / Vector3::Dot(ray.direction, normal);
+			if (ray.min >= t || t >= ray.max)
+			{
+				return false;
+			}
+			Vector3 p = ray.origin + t * ray.direction;
+			Vector3 pointToSide = p - triangle.v0;
+			Vector3 edgeA = a;
+			if (Vector3::Dot(normal, Vector3::Cross(edgeA, pointToSide)) < 0)
+			{
+				return false;
+			}
+			Vector3 edgeB = triangle.v2 - triangle.v1;
+			pointToSide = p - triangle.v1;
+			if (Vector3::Dot(normal, Vector3::Cross(edgeB, pointToSide)) < 0)
+			{
+				return false;
+			}
+			Vector3 edgeC = triangle.v0 - triangle.v2;
+			pointToSide = p - triangle.v2;
+			if (Vector3::Dot(normal, Vector3::Cross(edgeC, pointToSide)) < 0)
+			{
+				return false;
+			}
+			if (ignoreHitRecord)
+			{
 				return true;
 			}
-			}
-		}
+			hitRecord.materialIndex = triangle.materialIndex;
+			hitRecord.normal = triangle.normal;
+			hitRecord.origin = p;
+			hitRecord.t = t;
+			hitRecord.didHit = true;
+			return true;
 
+		}
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray)
 		{
 			HitRecord temp{};
@@ -293,8 +214,23 @@ namespace dae
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//todo W5
-			assert(false && "No Implemented Yet!");
-			return false;
+			HitRecord currentHit;
+			for (size_t i = 0; i < mesh.indices.size(); i += 3)
+			{
+				Triangle t = Triangle{ mesh.transformedPositions[mesh.indices[i]],mesh.transformedPositions[mesh.indices[i + 1]],mesh.transformedPositions[mesh.indices[i + 2]] };
+				t.cullMode = mesh.cullMode;
+				t.materialIndex = mesh.materialIndex;
+				t.normal = mesh.transformedNormals[i / 3];
+				if (HitTest_Triangle(t, ray, currentHit))
+				{
+					if (currentHit.t < hitRecord.t)
+					{
+						hitRecord = currentHit;
+					}
+				}
+
+			}
+			return hitRecord.didHit;
 		}
 
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray)

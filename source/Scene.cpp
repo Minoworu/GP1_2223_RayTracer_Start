@@ -47,9 +47,9 @@ namespace dae {
 			}
 
 		}
-		for (size_t i = 0; i < m_Triangles.size(); ++i)
+		for (size_t i = 0; i < m_TriangleMeshGeometries.size(); ++i)
 		{
-			GeometryUtils::HitTest_Triangle(m_Triangles[i], ray,currentHit);
+			GeometryUtils::HitTest_TriangleMesh(m_TriangleMeshGeometries[i], ray,currentHit);
 			if (currentHit.t < closestHit.t)
 			{
 				closestHit = currentHit;
@@ -74,9 +74,9 @@ namespace dae {
 				return true;
 			}
 		}
-		for (size_t i = 0; i < m_Triangles.size(); ++i)
+		for (size_t i = 0; i < m_TriangleMeshGeometries.size(); ++i)
 		{
-			if (GeometryUtils::HitTest_Triangle(m_Triangles[i],ray))
+			if (GeometryUtils::HitTest_TriangleMesh(m_TriangleMeshGeometries[i], ray))
 			{
 				return true;
 			}
@@ -265,11 +265,25 @@ namespace dae {
 
 
 	//Triangle (Temp)
-	auto triangle = Triangle{ {-.75, .5f, 0.f},  {-0.75f, 2.0f, 0.f}, {.75f, .5f, 0.f} };
-	triangle.cullMode = TriangleCullMode::NoCulling;
+	/*auto triangle = Triangle{ {-.75, .5f, 0.f},  {-0.75f, 2.0f, 0.f}, {.75f, .5f, 0.f} };
+	triangle.cullMode = TriangleCullMode::FrontFaceCulling;
 	triangle.materialIndex = matLambert_White;
 
-	m_Triangles.emplace_back(triangle);
+	m_Triangles.emplace_back(triangle);*/
+
+	// Mesh
+	m_pMesh = AddTriangleMesh(TriangleCullMode::NoCulling, matLambert_White);
+
+	m_pMesh->positions = { { -.75f,-1.f,.0f},{-.75f,1.f,.0f } , {.75f,1.f,1.f},{.75f,-1.f,0.f} };
+	m_pMesh->indices = {
+		0,1,2,
+		0,2,3
+	};
+	m_pMesh->CalculateNormals();
+
+	m_pMesh->Translate({ 0,1.5f,0.f });
+
+	m_pMesh->UpdateTransforms();
 
 	//Light
 	AddPointLight(Vector3{ 0.f, 5.f, 5.f }, 50.f, ColorRGB{ 1.f, 0.61f, .45f });//backLight

@@ -207,7 +207,7 @@ void dae::Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, f
 	//Update Color in Buffer
 	finalColor.MaxToOne();
 	// Apply shadowing to final color 
-	finalColor *= shadowFactor;
+	
 
 	m_pBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBuffer->format,
 		static_cast<uint8_t>(finalColor.r * 255),

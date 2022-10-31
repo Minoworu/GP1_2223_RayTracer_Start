@@ -33,8 +33,8 @@ namespace dae
 	struct Triangle
 	{
 		Triangle() = default;
-		Triangle(const Vector3& _v0, const Vector3& _v1, const Vector3& _v2, const Vector3& _normal):
-			v0{_v0}, v1{_v1}, v2{_v2}, normal{_normal.Normalized()}{}
+		Triangle(const Vector3& _v0, const Vector3& _v1, const Vector3& _v2, const Vector3& _normal) :
+			v0{ _v0 }, v1{ _v1 }, v2{ _v2 }, normal{ _normal.Normalized() } {}
 
 		Triangle(const Vector3& _v0, const Vector3& _v1, const Vector3& _v2) :
 			v0{ _v0 }, v1{ _v1 }, v2{ _v2 }
@@ -57,8 +57,8 @@ namespace dae
 	struct TriangleMesh
 	{
 		TriangleMesh() = default;
-		TriangleMesh(const std::vector<Vector3>& _positions, const std::vector<int>& _indices, TriangleCullMode _cullMode):
-		positions(_positions), indices(_indices), cullMode(_cullMode)
+		TriangleMesh(const std::vector<Vector3>& _positions, const std::vector<int>& _indices, TriangleCullMode _cullMode) :
+			positions(_positions), indices(_indices), cullMode(_cullMode)
 		{
 			//Calculate Normals
 			CalculateNormals();
@@ -78,7 +78,7 @@ namespace dae
 		std::vector<int> indices{};
 		unsigned char materialIndex{};
 
-		TriangleCullMode cullMode{TriangleCullMode::BackFaceCulling};
+		TriangleCullMode cullMode{ TriangleCullMode::BackFaceCulling };
 
 		Matrix rotationTransform{};
 		Matrix translationTransform{};
@@ -117,26 +117,45 @@ namespace dae
 			normals.push_back(triangle.normal);
 
 			//Not ideal, but making sure all vertices are updated
-			if(!ignoreTransformUpdate)
+			if (!ignoreTransformUpdate)
 				UpdateTransforms();
 		}
 
 		void CalculateNormals()
 		{
-			assert(false && "No Implemented Yet!");
+			for (size_t i = 0; i < indices.size(); i+=3)
+			{
+				Vector3 edgeA = positions[indices[i + 1]] - positions[indices[i]];
+				Vector3 edgeB = positions[indices[i + 2]] - positions[indices[i]];
+				normals.push_back(Vector3::Cross(edgeA, edgeB).Normalized());
+			}
 		}
 
 		void UpdateTransforms()
 		{
-			assert(false && "No Implemented Yet!");
+			
 			//Calculate Final Transform 
-			//const auto finalTransform = ...
+			Matrix SRT;
+			Matrix temp;
+			SRT = scaleTransform * rotationTransform * translationTransform;
+			temp = rotationTransform * translationTransform;
+			transformedNormals.reserve(normals.size());
+			transformedPositions.reserve(positions.size());
+			for (size_t i = 0; i < positions.size(); ++i)
+			{
+				transformedPositions.emplace_back(SRT.TransformPoint(positions[i]));
+			}
+			for (size_t i = 0; i < normals.size(); ++i)
+			{
+				transformedNormals.emplace_back(temp.TransformVector(normals[i])); 
+			}
+			/*const auto finalTransform = ...
 
-			//Transform Positions (positions > transformedPositions)
-			//...
+			Transform Positions (positions > transformedPositions)
+			...
 
-			//Transform Normals (normals > transformedNormals)
-			//...
+			Transform Normals (normals > transformedNormals)
+			...*/
 		}
 	};
 #pragma endregion
