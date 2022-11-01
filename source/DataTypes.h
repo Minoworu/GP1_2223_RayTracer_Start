@@ -129,10 +129,12 @@ namespace dae
 
 		void CalculateNormals()
 		{
+			normals.clear();
 			for (size_t i = 0; i < indices.size(); i+=3)
 			{
 				Vector3 edgeA = positions[indices[i + 1]] - positions[indices[i]];
 				Vector3 edgeB = positions[indices[i + 2]] - positions[indices[i]];
+
 				normals.push_back(Vector3::Cross(edgeA, edgeB).Normalized());
 			}
 		}
@@ -144,22 +146,20 @@ namespace dae
 			transformedNormals.clear();
 			transformedPositions.clear();
 			Matrix SRT;
-			Matrix temp;
 			SRT = scaleTransform * rotationTransform * translationTransform;
-			temp = rotationTransform * translationTransform;
 			transformedNormals.reserve(normals.size());
 			transformedPositions.reserve(positions.size());
 			/*for (size_t i = 0; i < positions.size(); ++i)
 			{
 				transformedPositions.emplace_back(SRT.TransformPoint(positions[i]));
 			}*/
-			for (size_t i = 0; i < normals.size(); ++i)
-			{
-				transformedNormals.emplace_back(temp.TransformVector(normals[i])); 
-			}
 			for (auto& p : positions)
 			{
 				transformedPositions.emplace_back(SRT.TransformPoint(p));
+			}
+			for (size_t i = 0; i < normals.size(); ++i)
+			{
+				transformedNormals.emplace_back(SRT.TransformVector(normals[i]).Normalized()); 
 			}
 			UpdateTransformedAABB(SRT);
 			/*const auto finalTransform = ...

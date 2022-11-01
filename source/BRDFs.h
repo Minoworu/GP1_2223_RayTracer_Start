@@ -4,7 +4,6 @@
 
 namespace dae
 {
-#define INV_PI (1.f / float(M_PI)) 
 	namespace BRDF
 	{
 		/**

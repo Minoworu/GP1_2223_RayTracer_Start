@@ -142,10 +142,8 @@ namespace dae
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//todo W5
-			Vector3 edge1 = triangle.v1 - triangle.v0;
-			Vector3 edge2 = triangle.v2 - triangle.v0;
-			Vector3 normal = Vector3::Cross(edge1, edge2);
-			float viewDot = Vector3::Dot(normal, ray.direction);
+		
+			float viewDot = Vector3::Dot(triangle.normal, ray.direction);
 			if (-FLT_EPSILON < viewDot && viewDot < FLT_EPSILON)
 			{
 				return false;
@@ -192,12 +190,10 @@ namespace dae
 
 			}
 			//https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+			Vector3 edge1 = triangle.v1 - triangle.v0;
+			Vector3 edge2 = triangle.v2 - triangle.v0;
 			const Vector3 h = Vector3::Cross(ray.direction, edge2);
 			float x = Vector3::Dot(edge1, h);
-			if (x > -FLT_EPSILON && x < FLT_EPSILON)
-			{
-				return false;
-			}
 			const float f = 1.0f / x;
 			const Vector3 s = ray.origin - triangle.v0;
 			const float u = f * Vector3::Dot(s, h);
@@ -221,10 +217,10 @@ namespace dae
 				return true;
 			}
 			Vector3 intersectPoint = ray.origin + ray.direction * t;
-			hitRecord.t = t;
 			hitRecord.origin = intersectPoint;
-			hitRecord.normal = triangle.normal;
 			hitRecord.materialIndex = triangle.materialIndex;
+			hitRecord.normal = triangle.normal;
+			hitRecord.t = t;
 			hitRecord.didHit = true;
 			return true;
 			// --------------------------------------------------------------------------------------------

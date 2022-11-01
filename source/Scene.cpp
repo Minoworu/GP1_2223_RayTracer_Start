@@ -29,27 +29,27 @@ namespace dae {
 	void dae::Scene::GetClosestHit(const Ray& ray, HitRecord& closestHit) const
 	{
 		HitRecord currentHit{};
-		for (size_t i = 0; i < m_SphereGeometries.size(); ++i)
+		for (auto& a : m_SphereGeometries)
 		{
-			GeometryUtils::HitTest_Sphere(m_SphereGeometries[i], ray, currentHit);
+			if (GeometryUtils::HitTest_Sphere(a, ray, currentHit))
 			if (currentHit.t < closestHit.t)
 			{
 				closestHit = currentHit;
 			}
 
 		}
-		for (size_t i = 0; i < m_PlaneGeometries.size(); ++i)
+		for (auto& a : m_PlaneGeometries)
 		{
-			GeometryUtils::HitTest_Plane(m_PlaneGeometries[i], ray, currentHit);
+			if(GeometryUtils::HitTest_Plane(a, ray, currentHit))
 			if (currentHit.t < closestHit.t)
 			{
 				closestHit = currentHit;
 			}
 
 		}
-		for (size_t i = 0; i < m_TriangleMeshGeometries.size(); ++i)
+		for (auto& a : m_TriangleMeshGeometries)
 		{
-			GeometryUtils::HitTest_TriangleMesh(m_TriangleMeshGeometries[i], ray,currentHit);
+			if (GeometryUtils::HitTest_TriangleMesh(a, ray, currentHit))
 			if (currentHit.t < closestHit.t)
 			{
 				closestHit = currentHit;
@@ -60,23 +60,23 @@ namespace dae {
 	bool Scene::DoesHit(const Ray& ray) const
 	{
 
-		for (size_t i = 0; i < m_SphereGeometries.size(); ++i)
+		for (auto& a : m_SphereGeometries)
 		{
-			if (GeometryUtils::HitTest_Sphere(m_SphereGeometries[i], ray))
+			if (GeometryUtils::HitTest_Sphere(a, ray))
 			{
 				return true;
 			}
 		}
-		for (size_t i = 0; i < m_PlaneGeometries.size(); ++i)
+		for (auto& a : m_PlaneGeometries)
 		{
-			if (GeometryUtils::HitTest_Plane(m_PlaneGeometries[i], ray))
+			if (GeometryUtils::HitTest_Plane(a, ray))
 			{
 				return true;
 			}
 		}
-		for (size_t i = 0; i < m_TriangleMeshGeometries.size(); ++i)
+		for (auto& a: m_TriangleMeshGeometries)
 		{
-			if (GeometryUtils::HitTest_TriangleMesh(m_TriangleMeshGeometries[i], ray))
+			if (GeometryUtils::HitTest_TriangleMesh(a, ray))
 			{
 				return true;
 			}
@@ -296,7 +296,7 @@ namespace dae {
 	{
 		sceneName = "Reference Scene";
 		m_Camera.origin = { 0.f, 3.f, -9.f };
-		m_Camera.fovAngle = 45.f;
+		m_Camera.SetFOV(45.f);
 
 		const auto matCT_GrayRoughMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.960f, 0.915f }, 1.f, 1.f));
 		const auto matCT_GrayMediumMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.960f, 0.915f }, 1.f, 0.6f));
@@ -329,21 +329,25 @@ namespace dae {
 		m_pMeshes[0] = AddTriangleMesh(TriangleCullMode::BackFaceCulling, matLambert_White);
 		m_pMeshes[0]->AppendTriangle(baseTriangle, true);
 		m_pMeshes[0]->Translate({ -1.75f, 4.5f, 0.0f });
+		m_pMeshes[0]->CalculateNormals();
 		m_pMeshes[0]->UpdateAABB();
 		m_pMeshes[0]->UpdateTransforms();
 
 		m_pMeshes[1] = AddTriangleMesh(TriangleCullMode::FrontFaceCulling, matLambert_White);
 		m_pMeshes[1]->AppendTriangle(baseTriangle, true);
 		m_pMeshes[1]->Translate({ 0.0f, 4.5f, 0.0f });
+		m_pMeshes[1]->CalculateNormals();
 		m_pMeshes[1]->UpdateAABB();
 		m_pMeshes[1]->UpdateTransforms();
 
 		m_pMeshes[2] = AddTriangleMesh(TriangleCullMode::NoCulling, matLambert_White);
 		m_pMeshes[2]->AppendTriangle(baseTriangle, true);
 		m_pMeshes[2]->Translate({ 1.75f, 4.5f, 0.0f });
+		m_pMeshes[2]->CalculateNormals();
 		m_pMeshes[2]->UpdateAABB();
 		m_pMeshes[2]->UpdateTransforms();
 
+		
 
 		//Light
 		AddPointLight(Vector3{ 0.f, 5.f, 5.f }, 50.f, ColorRGB{ 1.f, 0.61f, 0.45f }); // Backlight
@@ -366,7 +370,7 @@ namespace dae {
 	{
 		sceneName = "Bunny Scene";
 		m_Camera.origin = { 0.f, 3.f, -9.f };
-		m_Camera.fovAngle = 45.f;
+		m_Camera.SetFOV(45.f);
 
 
 		//Materials

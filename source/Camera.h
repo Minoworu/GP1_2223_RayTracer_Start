@@ -15,9 +15,9 @@ namespace dae
 		Camera() = default;
 
 		Camera(const Vector3& _origin, float _fovAngle) :
-			origin{ _origin },
-			fovAngle{ _fovAngle }
+			origin{ _origin }
 		{
+			SetFOV(_fovAngle);
 		}
 
 
@@ -35,6 +35,7 @@ namespace dae
 		float totalYaw{ 0.f };
 		const float minYaw{ -1.f };
 		const float maxYaw{ 1.f };
+		float tangent{1.f};
 		Matrix cameraToWorld{};
 
 
@@ -83,13 +84,17 @@ namespace dae
 				totalPitch += -mouseY * (rotationSpeed) * 0.05f;
 				totalYaw += mouseX * (rotationSpeed) * 0.05f;
 				totalPitch = std::clamp(totalPitch, minYaw, maxYaw);
-				std::cout << totalPitch << '\n';
 			}
 			forward = Matrix::CreateRotation(totalPitch, totalYaw, 0.f).TransformVector(Vector3::UnitZ);
-			forward.Normalize();
+			/*forward.Normalize();*/
 
 			//todo: W2
 			//assert(false && "Not Implemented Yet");
+		}
+		void SetFOV(float fov)
+		{
+			tangent = tanf(TO_RADIANS * (fov / 2.f));
+			fovAngle = fov;
 		}
 	};
 }

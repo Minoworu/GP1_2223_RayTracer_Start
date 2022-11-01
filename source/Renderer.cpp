@@ -35,12 +35,11 @@ void Renderer::Render(Scene* pScene) const
 {
 	Camera& camera = pScene->GetCamera();
 	camera.CalculateCameraToWorld();
-
+	
 	auto& materials = pScene->GetMaterials();
 
 	float aspectRatio = m_Width / (float)m_Height;
 	auto& lights = pScene->GetLights();
-	float fov = tanf(TO_RADIANS * (camera.fovAngle / 2.f));
 
 
 
@@ -102,35 +101,30 @@ void Renderer::Render(Scene* pScene) const
 	//PARALLEL
 	concurrency::parallel_for(0u, numPixels, [=, this](int i)
 		{
-			RenderPixel(pScene, i, fov, aspectRatio, camera, lights, materials);
+			RenderPixel(pScene, i, aspectRatio, camera, lights, materials);
 		});
 #else
 	//SYNCHRONOUS
 	for (uint32_t index = 0; index < numPixels; index++)
 	{
-		RenderPixel(pScene, index, fov, aspectRatio, camera, lights, materials);
+		RenderPixel(pScene, index,  aspectRatio, camera, lights, materials);
 	}
 #endif
-
-
 	SDL_UpdateWindowSurface(m_pWindow);
 }
 
-void dae::Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float aspectRatio, const Camera& camera, const std::vector<Light>& lights, const std::vector<Material*>& materials) const
+void dae::Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float aspectRatio, const Camera& camera, const std::vector<Light>& lights, const std::vector<Material*>& materials) const
 {
 	const int px = pixelIndex % m_Width;
 	const int py = pixelIndex / m_Width;
 
 	/*const Matrix cameraToWorld = camera.cameraToWorld;*/
 
-	const uint32_t numPixels = m_Width * m_Height;
-
 	Vector3 rayDirection;
 	float offset{ 0.5f };
-	rayDirection.x = ((2.f * (px + offset) / float(m_Width)) - 1) * aspectRatio * fov;
-	rayDirection.y = (1.f - 2.f * (py + offset) / m_Height) * fov;
+	rayDirection.x = ((2.f * (px + offset) / float(m_Width)) - 1) * aspectRatio * camera.tangent;
+	rayDirection.y = (1.f - 2.f * (py + offset) / m_Height) * camera.tangent;
 	rayDirection.z = 1;
-
 
 	rayDirection = camera.cameraToWorld.TransformVector(rayDirection);
 	rayDirection.Normalize();
@@ -155,10 +149,11 @@ void dae::Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, f
 		for (int i = 0; i < lights.size(); i++)
 		{
 			Vector3 lightHit = LightUtils::GetDirectionToLight(lights[i], closestHit.origin);
+			float lightNormalize = lightHit.Normalize();
 
 			if (m_ShadowsEnabled)
 			{
-				float lightNormalize = lightHit.Normalize();
+			
 				shadowRay.origin = closestHit.origin;
 				shadowRay.direction = lightHit;
 				shadowRay.max = lightNormalize;
@@ -206,8 +201,6 @@ void dae::Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, f
 	//Update Color in Buffer
 	finalColor.MaxToOne();
 	// Apply shadowing to final color 
-
-
 	m_pBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBuffer->format,
 		static_cast<uint8_t>(finalColor.r * 255),
 		static_cast<uint8_t>(finalColor.g * 255),
