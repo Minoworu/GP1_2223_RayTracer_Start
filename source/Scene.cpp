@@ -272,16 +272,12 @@ namespace dae {
 	m_Triangles.emplace_back(triangle);*/
 
 	// Mesh
-	m_pMesh = AddTriangleMesh(TriangleCullMode::NoCulling, matLambert_White);
-
-	m_pMesh->positions = { { -.75f,-1.f,.0f},{-.75f,1.f,.0f } , {.75f,1.f,1.f},{.75f,-1.f,0.f} };
-	m_pMesh->indices = {
-		0,1,2,
-		0,2,3
-	};
-	m_pMesh->CalculateNormals();
-
-	m_pMesh->Translate({ 0,1.5f,0.f });
+	m_pMesh = AddTriangleMesh(TriangleCullMode::BackFaceCulling, matLambert_White);
+	Utils::ParseOBJ("Resources/simple_cube.obj", m_pMesh->positions, m_pMesh->normals, m_pMesh->indices);
+	
+	
+	m_pMesh->Scale({ 0.7f,0.7f,0.7f });
+	m_pMesh->Translate({ 0,1.f,0.f });
 
 	m_pMesh->UpdateTransforms();
 
@@ -290,4 +286,11 @@ namespace dae {
 	AddPointLight(Vector3{ -2.5f, 5.f, -5.f }, 70.f, ColorRGB{ 1.f, 0.8f, .45f });//front light lef
 	AddPointLight(Vector3{ 2.5f, 2.5f, -5.f }, 50.f, ColorRGB{ .34f, 0.47f, .68f });
 }
+	void Scene_W4::Update(Timer* pTimer)
+	{
+		Scene::Update(pTimer);
+
+		m_pMesh->RotateY(PI_DIV_2 * cosf(pTimer->GetElapsed()) );
+		m_pMesh->UpdateTransforms();
+	}
 }

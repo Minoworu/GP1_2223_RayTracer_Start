@@ -137,7 +137,7 @@ namespace dae
 			//Calculate Final Transform 
 			Matrix SRT;
 			Matrix temp;
-			SRT = scaleTransform * rotationTransform * translationTransform;
+			SRT =  rotationTransform * translationTransform * scaleTransform;
 			temp = rotationTransform * translationTransform;
 			transformedNormals.reserve(normals.size());
 			transformedPositions.reserve(positions.size());

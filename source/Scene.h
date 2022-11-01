@@ -118,13 +118,8 @@ namespace dae
 		Scene_W4& operator=(const Scene_W4&) = delete;
 		Scene_W4& operator=(Scene_W4&&) noexcept = delete;
 		void Initialize() override;
-		void Update(Timer* pTimer) override
-		{
-			Scene::Update(pTimer);
+		void Update(Timer* pTimer) override;
 
-			m_pMesh->RotateY(PI_DIV_2 * pTimer->GetElapsed());
-			m_pMesh->UpdateTransforms();
-		}
 
 	private:
 		TriangleMesh* m_pMesh{ nullptr };
