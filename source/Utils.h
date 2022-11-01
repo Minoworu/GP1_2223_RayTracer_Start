@@ -89,11 +89,11 @@ namespace dae
 				{
 					return true;
 				}
+				hitRecord.t = temp;
 				hitRecord.didHit = true;
 				hitRecord.origin = ray.origin + (ray.direction * temp);
 				hitRecord.normal = plane.normal;
 				hitRecord.materialIndex = plane.materialIndex;
-				hitRecord.t = temp;
 
 			}
 			return hitRecord.didHit;
@@ -143,7 +143,7 @@ namespace dae
 			switch (currentCullMode)
 			case dae::TriangleCullMode::FrontFaceCulling:
 			{
-				if (viewDot < 0)
+				if (viewDot > 0)
 				{
 					return false;
 				}
@@ -151,7 +151,7 @@ namespace dae
 				break;
 			case dae::TriangleCullMode::BackFaceCulling:
 
-				if (viewDot > 0)
+				if (viewDot < 0)
 				{
 					return false;
 				}
@@ -160,42 +160,90 @@ namespace dae
 				break;
 
 			}
-			Vector3 center = (triangle.v0 + triangle.v1 + triangle.v2) / 3.f;
-			Vector3 L = center - ray.origin;
-			float t = Vector3::Dot(L, normal) / Vector3::Dot(ray.direction, normal);
-			if (ray.min >= t || t >= ray.max)
+			//https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+			const float epsilon = 0.0000001f;
+			const Vector3 edge1 = triangle.v1 - triangle.v0;
+			const Vector3 edge2 = triangle.v2 - triangle.v0;
+			const Vector3 h = Vector3::Cross(ray.direction, edge2);
+			float x = Vector3::Dot(edge1, h);
+			if (x > -epsilon && x < epsilon)
 			{
 				return false;
 			}
-			Vector3 p = ray.origin + t * ray.direction;
-			Vector3 pointToSide = p - triangle.v0;
-			Vector3 edgeA = a;
-			if (Vector3::Dot(normal, Vector3::Cross(edgeA, pointToSide)) < 0)
+			const float f = 1.0f / x;
+			const Vector3 s = ray.origin - triangle.v0;
+			const float u = f * Vector3::Dot(s, h);
+			if (u < 0.f || u > 1.f)
 			{
 				return false;
 			}
-			Vector3 edgeB = triangle.v2 - triangle.v1;
-			pointToSide = p - triangle.v1;
-			if (Vector3::Dot(normal, Vector3::Cross(edgeB, pointToSide)) < 0)
+			const Vector3 q = Vector3::Cross(s, edge1);
+			const float v = f * Vector3::Dot(ray.direction, q);
+			if (v < 0.f || v + u > 1.f)
 			{
 				return false;
 			}
-			Vector3 edgeC = triangle.v0 - triangle.v2;
-			pointToSide = p - triangle.v2;
-			if (Vector3::Dot(normal, Vector3::Cross(edgeC, pointToSide)) < 0)
+			const float t = f * Vector3::Dot(edge2, q);
+			if (t < ray.min || t >= ray.max)
 			{
 				return false;
 			}
-			if (ignoreHitRecord)
+			if (ignoreHitRecord == true)
 			{
 				return true;
 			}
+			Vector3 intersectPoint = ray.origin + ray.direction * t;
+			hitRecord.t = t;
 			hitRecord.didHit = true;
-			hitRecord.origin = p;
+			hitRecord.origin = intersectPoint;
 			hitRecord.normal = triangle.normal;
 			hitRecord.materialIndex = triangle.materialIndex;
-			hitRecord.t = t;
 			return true;
+			// --------------------------------------------------------------------------------------------
+			// --------------------------------------------------------------------------------------------
+			// --------------------------------------------------------------------------------------------
+			// --------------------------------------------------------------------------------------------
+			// --------------------------------------------------------------------------------------------
+			// --------------------------------------------------------------------------------------------
+			// --------------------------------------------------------------------------------------------
+
+
+			//Vector3 center = (triangle.v0 + triangle.v1 + triangle.v2) / 3.f;
+			//Vector3 L = center - ray.origin;
+			//float t = Vector3::Dot(L, normal) / Vector3::Dot(ray.direction, normal);
+			//if (ray.min >= t || t >= ray.max)
+			//{
+			//	return false;
+			//}
+			//Vector3 p = ray.origin + t * ray.direction;
+			//Vector3 pointToSide = p - triangle.v0;
+			//Vector3 edgeA = a;
+			//if (Vector3::Dot(normal, Vector3::Cross(edgeA, pointToSide)) < 0)
+			//{
+			//	return false;
+			//}
+			//Vector3 edgeB = triangle.v2 - triangle.v1;
+			//pointToSide = p - triangle.v1;
+			//if (Vector3::Dot(normal, Vector3::Cross(edgeB, pointToSide)) < 0)
+			//{
+			//	return false;
+			//}
+			//Vector3 edgeC = triangle.v0 - triangle.v2;
+			//pointToSide = p - triangle.v2;
+			//if (Vector3::Dot(normal, Vector3::Cross(edgeC, pointToSide)) < 0)
+			//{
+			//	return false;
+			//}
+			//if (ignoreHitRecord)
+			//{
+			//	return true;
+			//}
+			//hitRecord.didHit = true;
+			//hitRecord.origin = p;
+			//hitRecord.normal = triangle.normal;
+			//hitRecord.materialIndex = triangle.materialIndex;
+			//hitRecord.t = t;
+			//return true;
 
 		}
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray)
@@ -232,7 +280,7 @@ namespace dae
 
 			//todo W5
 			// slab test
-			if (!SlabTest_TriangleMesh(mesh,ray))
+			if (!SlabTest_TriangleMesh(mesh, ray))
 			{
 				return false;
 			}
@@ -265,7 +313,7 @@ namespace dae
 			return HitTest_TriangleMesh(mesh, ray, temp, true);
 		}
 
-		
+
 #pragma endregion
 	}
 
