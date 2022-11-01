@@ -4,6 +4,7 @@
 
 namespace dae
 {
+#define INV_PI (1.f / float(M_PI)) 
 	namespace BRDF
 	{
 		/**
@@ -15,7 +16,7 @@ namespace dae
 		{
 			//todo: W3
 			ColorRGB rho = cd * kd;
-			ColorRGB final = rho / float(M_PI);
+			ColorRGB final = rho * INV_PI;
 			return { final };
 		}
 
@@ -23,7 +24,7 @@ namespace dae
 		{
 			//todo: W3
 			ColorRGB rho = cd * kd;
-			ColorRGB final = rho / float(M_PI);
+			ColorRGB final = rho * INV_PI;
 			return { final };
 		}
 
@@ -58,7 +59,7 @@ namespace dae
 		static ColorRGB FresnelFunction_Schlick(const Vector3& h, const Vector3& v, const ColorRGB& f0)
 		{
 			//todo: W3
-			float dot = std::max(Vector3::Dot(h, v),0.f);
+			float dot = std::max(Vector3::Dot(h, v), 0.f);
 			ColorRGB fresnel = f0 + (ColorRGB{ 1,1,1 } - f0) * powf((1 - dot), 5);
 			/*ColorRGB fresnel = ColorRGB::Lerp(f0, ColorRGB{ 1,1,1 }, powf((1 - dot), 5));*/
 			return { fresnel };
@@ -76,7 +77,7 @@ namespace dae
 			//todo: W3
 			float alpha = roughness * roughness;
 			float alphaSq = alpha * alpha;
-			float dot = std::max(Vector3::Dot(n, h),0.f);
+			float dot = std::max(Vector3::Dot(n, h), 0.f);
 			float dotSq = dot * dot;
 			float normalDist = alphaSq / (float(M_PI) * (dotSq * (alphaSq - 1) + 1) * (dotSq * (alphaSq - 1) + 1));
 			return { normalDist };

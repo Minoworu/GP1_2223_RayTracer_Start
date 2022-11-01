@@ -121,7 +121,7 @@ void dae::Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, f
 	const int px = pixelIndex % m_Width;
 	const int py = pixelIndex / m_Width;
 
-	const Matrix cameraToWorld = camera.cameraToWorld;
+	/*const Matrix cameraToWorld = camera.cameraToWorld;*/
 
 	const uint32_t numPixels = m_Width * m_Height;
 
@@ -132,13 +132,12 @@ void dae::Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, f
 	rayDirection.z = 1;
 
 
-	rayDirection = cameraToWorld.TransformVector(rayDirection);
+	rayDirection = camera.cameraToWorld.TransformVector(rayDirection);
 	rayDirection.Normalize();
 
 	Ray viewRay{ camera.origin,rayDirection };
 
 	ColorRGB finalColor{};
-	float shadowFactor{ 1.f };
 
 	HitRecord closestHit{};
 	pScene->GetClosestHit(viewRay, closestHit);
@@ -148,6 +147,7 @@ void dae::Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, f
 		// Not Shadowed
 		/*finalColor = materials[closestHit.materialIndex]->Shade();*/
 		closestHit.origin += closestHit.normal * 0.001f;
+		Ray shadowRay;
 
 
 		// Shadowed
@@ -155,11 +155,10 @@ void dae::Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, f
 		for (int i = 0; i < lights.size(); i++)
 		{
 			Vector3 lightHit = LightUtils::GetDirectionToLight(lights[i], closestHit.origin);
-			float lightNormalize = lightHit.Normalize();
 
 			if (m_ShadowsEnabled)
 			{
-				Ray shadowRay;
+				float lightNormalize = lightHit.Normalize();
 				shadowRay.origin = closestHit.origin;
 				shadowRay.direction = lightHit;
 				shadowRay.max = lightNormalize;
@@ -207,7 +206,7 @@ void dae::Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, f
 	//Update Color in Buffer
 	finalColor.MaxToOne();
 	// Apply shadowing to final color 
-	
+
 
 	m_pBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBuffer->format,
 		static_cast<uint8_t>(finalColor.r * 255),

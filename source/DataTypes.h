@@ -149,10 +149,10 @@ namespace dae
 			temp = rotationTransform * translationTransform;
 			transformedNormals.reserve(normals.size());
 			transformedPositions.reserve(positions.size());
-			for (size_t i = 0; i < positions.size(); ++i)
+			/*for (size_t i = 0; i < positions.size(); ++i)
 			{
 				transformedPositions.emplace_back(SRT.TransformPoint(positions[i]));
-			}
+			}*/
 			for (size_t i = 0; i < normals.size(); ++i)
 			{
 				transformedNormals.emplace_back(temp.TransformVector(normals[i])); 

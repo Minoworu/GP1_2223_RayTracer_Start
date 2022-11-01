@@ -383,7 +383,7 @@ namespace dae {
 
 		//Bunny Object
 		m_pMesh = AddTriangleMesh(TriangleCullMode::BackFaceCulling, matLambert_White);
-		Utils::ParseOBJ("Resources/lowpoly_bunny.obj",
+		Utils::ParseOBJ("Resources/lowpoly_bunny2.obj",
 			m_pMesh->positions,
 			m_pMesh->normals,
 			m_pMesh->indices);
@@ -391,7 +391,7 @@ namespace dae {
 		m_pMesh->Scale({ 2.f, 2.f, 2.f });
 
 		m_pMesh->UpdateAABB();
-		m_pMesh->UpdateTransforms();
+	/*	m_pMesh->UpdateTransforms();*/
 
 
 		//Light

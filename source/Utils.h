@@ -14,9 +14,9 @@ namespace dae
 		{
 			// ray sphere intersection 2d
 
-			Vector3 tc = sphere.origin - ray.origin;
+			const Vector3 tc = sphere.origin - ray.origin;
 			float dp = Vector3::Dot(tc, ray.direction);
-			Vector3 tp = dp * ray.direction - ray.origin;
+			const Vector3 tp = dp * ray.direction - ray.origin;
 			float odSquare = tc.SqrMagnitude() - (dp * dp);
 
 			if (odSquare > (sphere.radius * sphere.radius) )
@@ -24,7 +24,7 @@ namespace dae
 				return false;
 			}
 			const float tca = sqrtf((sphere.radius * sphere.radius) - odSquare);
-			float t0 = dp - tca;
+			const float t0 = dp - tca;
 			if (t0 <= ray.min || t0 > ray.max)
 			{
 				return false;
@@ -122,10 +122,10 @@ namespace dae
 					return true;
 				}
 				hitRecord.t = temp;
-				hitRecord.didHit = true;
 				hitRecord.origin = ray.origin + (ray.direction * temp);
 				hitRecord.normal = plane.normal;
 				hitRecord.materialIndex = plane.materialIndex;
+				hitRecord.didHit = true;
 
 			}
 			return hitRecord.didHit;
@@ -142,10 +142,9 @@ namespace dae
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//todo W5
-			Vector3 a = triangle.v1 - triangle.v0;
-			Vector3 b = triangle.v2 - triangle.v0;
-			Vector3 c = triangle.v2 - triangle.v1;
-			Vector3 normal = Vector3::Cross(a, b);
+			Vector3 edge1 = triangle.v1 - triangle.v0;
+			Vector3 edge2 = triangle.v2 - triangle.v0;
+			Vector3 normal = Vector3::Cross(edge1, edge2);
 			float viewDot = Vector3::Dot(normal, ray.direction);
 			if (-FLT_EPSILON < viewDot && viewDot < FLT_EPSILON)
 			{
@@ -175,7 +174,7 @@ namespace dae
 			switch (currentCullMode)
 			case dae::TriangleCullMode::FrontFaceCulling:
 			{
-				if (viewDot > 0)
+				if (viewDot < 0)
 				{
 					return false;
 				}
@@ -183,7 +182,7 @@ namespace dae
 				break;
 			case dae::TriangleCullMode::BackFaceCulling:
 
-				if (viewDot < 0)
+				if (viewDot > 0)
 				{
 					return false;
 				}
@@ -193,12 +192,9 @@ namespace dae
 
 			}
 			//https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
-			const float epsilon = 0.0000001f;
-			const Vector3 edge1 = triangle.v1 - triangle.v0;
-			const Vector3 edge2 = triangle.v2 - triangle.v0;
 			const Vector3 h = Vector3::Cross(ray.direction, edge2);
 			float x = Vector3::Dot(edge1, h);
-			if (x > -epsilon && x < epsilon)
+			if (x > -FLT_EPSILON && x < FLT_EPSILON)
 			{
 				return false;
 			}
@@ -226,10 +222,10 @@ namespace dae
 			}
 			Vector3 intersectPoint = ray.origin + ray.direction * t;
 			hitRecord.t = t;
-			hitRecord.didHit = true;
 			hitRecord.origin = intersectPoint;
 			hitRecord.normal = triangle.normal;
 			hitRecord.materialIndex = triangle.materialIndex;
+			hitRecord.didHit = true;
 			return true;
 			// --------------------------------------------------------------------------------------------
 			// --------------------------------------------------------------------------------------------
@@ -317,12 +313,13 @@ namespace dae
 				return false;
 			}
 			HitRecord currentHit;
+			Triangle t;
 			for (size_t i = 0; i < mesh.indices.size(); i += 3)
 			{
-				Triangle t = Triangle{ mesh.transformedPositions[mesh.indices[i]],mesh.transformedPositions[mesh.indices[i + 1]],mesh.transformedPositions[mesh.indices[i + 2]] };
+				t = Triangle{ mesh.transformedPositions[mesh.indices[i]],mesh.transformedPositions[mesh.indices[i + 1]],mesh.transformedPositions[mesh.indices[i + 2]] };
 				t.cullMode = mesh.cullMode;
-				t.materialIndex = mesh.materialIndex;
 				t.normal = mesh.transformedNormals[i / 3];
+				t.materialIndex = mesh.materialIndex;
 				if (HitTest_Triangle(t, ray, currentHit))
 				{
 					if (ignoreHitRecord == true)

@@ -42,9 +42,9 @@ namespace dae
 			up = Vector3::Cross(forward, right);
 			up = up.Normalized();
 
-			cameraToWorld = Matrix{ right,up,forward,origin };
+			cameraToWorld = { right,up,forward,origin };
 
-			return cameraToWorld ;
+			return cameraToWorld;
 		}
 
 		void Update(Timer* pTimer)
@@ -80,13 +80,7 @@ namespace dae
 				totalPitch += -mouseY * (rotationSpeed) * 0.05f;
 				totalYaw += mouseX * (rotationSpeed) * 0.05f;
 			}
-		
-
-
-
-			Matrix totalRot = Matrix::CreateRotation(totalPitch, totalYaw, 0.f);
-
-			forward = totalRot.TransformVector(Vector3::UnitZ);
+			forward = Matrix::CreateRotation(totalPitch, totalYaw, 0.f).TransformVector(Vector3::UnitZ);
 			forward.Normalize();
 
 			//todo: W2
