@@ -2,6 +2,8 @@
 #include <cassert>
 #include <SDL_keyboard.h>
 #include <SDL_mouse.h>
+#include <algorithm>
+#include <iostream>	
 
 #include "Math.h"
 #include "Timer.h"
@@ -31,6 +33,8 @@ namespace dae
 		const float rotationSpeed{ 5.f * TO_RADIANS };
 		float totalPitch{ 0.f };
 		float totalYaw{ 0.f };
+		const float minYaw{ -1.f };
+		const float maxYaw{ 1.f };
 		Matrix cameraToWorld{};
 
 
@@ -71,7 +75,6 @@ namespace dae
 			{
 				origin += up * speed * float(mouseX) * 0.05f;
 				origin += up * -speed * float(mouseY) * 0.05f;
-
 			}
 			// ROTATION
 			//https://stackoverflow.com/questions/71030102/how-to-detect-if-left-mousebutton-is-being-held-down-with-sdl2
@@ -79,6 +82,8 @@ namespace dae
 			{
 				totalPitch += -mouseY * (rotationSpeed) * 0.05f;
 				totalYaw += mouseX * (rotationSpeed) * 0.05f;
+				totalPitch = std::clamp(totalPitch, minYaw, maxYaw);
+				std::cout << totalPitch << '\n';
 			}
 			forward = Matrix::CreateRotation(totalPitch, totalYaw, 0.f).TransformVector(Vector3::UnitZ);
 			forward.Normalize();
