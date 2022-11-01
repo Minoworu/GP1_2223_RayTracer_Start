@@ -127,7 +127,7 @@ namespace dae {
 	Matrix Matrix::CreateRotationY(float yaw)
 	{
 		Vector3 vX = { cosf(yaw),0.f,-sinf(yaw) };
-		Vector3 vZ = { sinf(yaw),0.f,cos(yaw) };
+		Vector3 vZ = { sinf(yaw),0.f,cosf(yaw) };
 		Matrix yawMatrix = Matrix{ vX,Vector3::UnitY,vZ,Vector3::Zero };
 		return yawMatrix;
 	}
@@ -142,11 +142,7 @@ namespace dae {
 
 	Matrix Matrix::CreateRotation(const Vector3& r)
 	{
-		Matrix pitch = CreateRotationX(r.x);
-		Matrix yaw = CreateRotationY(r.y);
-		Matrix roll = CreateRotationZ(r.z);
-		Matrix rotation = pitch * yaw * roll;
-		return rotation;
+		return  CreateRotationX(r.x) * CreateRotationY(r.y) * CreateRotationZ(r.z);
 	}
 
 	Matrix Matrix::CreateRotation(float pitch, float yaw, float roll)

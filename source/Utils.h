@@ -27,10 +27,10 @@ namespace dae
 					{
 						return true;
 					}
+					hitRecord.didHit = true;
 					hitRecord.origin = ray.origin + (ray.direction * hitRecord.t);
 					hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
 					hitRecord.materialIndex = sphere.materialIndex;
-					hitRecord.didHit = true;
 					return true;
 				}
 
@@ -61,10 +61,10 @@ namespace dae
 					{
 						return true;
 					}
+					hitRecord.didHit = true;
 					hitRecord.origin = ray.origin + (ray.direction * hitRecord.t);
 					hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
 					hitRecord.materialIndex = sphere.materialIndex;
-					hitRecord.didHit = true;
 					return true;
 				}
 			}
@@ -89,11 +89,11 @@ namespace dae
 				{
 					return true;
 				}
-				hitRecord.normal = plane.normal;
-				hitRecord.origin = ray.origin + (ray.direction * temp);
-				hitRecord.t = temp;
-				hitRecord.materialIndex = plane.materialIndex;
 				hitRecord.didHit = true;
+				hitRecord.origin = ray.origin + (ray.direction * temp);
+				hitRecord.normal = plane.normal;
+				hitRecord.materialIndex = plane.materialIndex;
+				hitRecord.t = temp;
 
 			}
 			return hitRecord.didHit;
@@ -143,7 +143,6 @@ namespace dae
 			switch (currentCullMode)
 			case dae::TriangleCullMode::FrontFaceCulling:
 			{
-
 				if (viewDot < 0)
 				{
 					return false;
@@ -152,17 +151,12 @@ namespace dae
 				break;
 			case dae::TriangleCullMode::BackFaceCulling:
 
-
-
 				if (viewDot > 0)
 				{
 					return false;
 				}
-
 				break;
 			case dae::TriangleCullMode::NoCulling:
-
-
 				break;
 
 			}
@@ -196,11 +190,11 @@ namespace dae
 			{
 				return true;
 			}
-			hitRecord.materialIndex = triangle.materialIndex;
-			hitRecord.normal = triangle.normal;
-			hitRecord.origin = p;
-			hitRecord.t = t;
 			hitRecord.didHit = true;
+			hitRecord.origin = p;
+			hitRecord.normal = triangle.normal;
+			hitRecord.materialIndex = triangle.materialIndex;
+			hitRecord.t = t;
 			return true;
 
 		}
@@ -211,9 +205,37 @@ namespace dae
 		}
 #pragma endregion
 #pragma region TriangeMesh HitTest
+		inline bool SlabTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray)
+		{
+			float tx1 = (mesh.transformedMinAABB.x - ray.origin.x) / ray.direction.x;
+			float tx2 = (mesh.transformedMaxAABB.x - ray.origin.x) / ray.direction.x;
+
+			float tmin = std::min(tx1, tx2);
+			float tmax = std::max(tx1, tx2);
+
+			float ty1 = (mesh.transformedMinAABB.y - ray.origin.y) / ray.direction.y;
+			float ty2 = (mesh.transformedMaxAABB.y - ray.origin.y) / ray.direction.y;
+
+			tmin = std::max(tmin, std::min(ty1, ty2));
+			tmax = std::min(tmin, std::max(ty1, ty2));
+
+			float tz1 = (mesh.transformedMinAABB.z - ray.origin.z) / ray.direction.z;
+			float tz2 = (mesh.transformedMaxAABB.z - ray.origin.z) / ray.direction.z;
+
+			tmin = std::max(tmin, std::min(tz1, tz2));
+			tmax = std::min(tmin, std::max(tz1, tz2));
+
+			return tmax > 0 && tmax >= tmin;
+		}
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
+
 			//todo W5
+			// slab test
+			if (!SlabTest_TriangleMesh(mesh,ray))
+			{
+				return false;
+			}
 			HitRecord currentHit;
 			for (size_t i = 0; i < mesh.indices.size(); i += 3)
 			{
@@ -223,6 +245,10 @@ namespace dae
 				t.normal = mesh.transformedNormals[i / 3];
 				if (HitTest_Triangle(t, ray, currentHit))
 				{
+					if (ignoreHitRecord == true)
+					{
+						return true;
+					}
 					if (currentHit.t < hitRecord.t)
 					{
 						hitRecord = currentHit;
@@ -238,6 +264,8 @@ namespace dae
 			HitRecord temp{};
 			return HitTest_TriangleMesh(mesh, ray, temp, true);
 		}
+
+		
 #pragma endregion
 	}
 
