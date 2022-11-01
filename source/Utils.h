@@ -12,63 +12,95 @@ namespace dae
 		//SPHERE HIT-TESTS
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W1
-			float A = (Vector3::Dot(ray.direction, ray.direction));
-			float B = (Vector3::Dot((2 * ray.direction), ray.origin - sphere.origin));
-			float C = (Vector3::Dot((ray.origin - sphere.origin), (ray.origin - sphere.origin)) - (sphere.radius * sphere.radius));
-			float D = ((B * B) - (4 * A * C));
-			// D == 0 means 1 hit 
-			if (AreEqual(D, 0.f))
+			// ray sphere intersection 2d
+
+			Vector3 tc = sphere.origin - ray.origin;
+			float dp = Vector3::Dot(tc, ray.direction);
+			Vector3 tp = dp * ray.direction - ray.origin;
+			float odSquare = tc.SqrMagnitude() - (dp * dp);
+
+			if (odSquare > (sphere.radius * sphere.radius) )
 			{
-				hitRecord.t = -B / (2 * A);
-				if (ray.min < hitRecord.t && hitRecord.t < ray.max)
-				{
-					if (ignoreHitRecord == true)
-					{
-						return true;
-					}
-					hitRecord.didHit = true;
-					hitRecord.origin = ray.origin + (ray.direction * hitRecord.t);
-					hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
-					hitRecord.materialIndex = sphere.materialIndex;
-					return true;
-				}
-
-
+				return false;
 			}
-			else if (D > 0.f) // check if hit 
+			const float tca = sqrtf((sphere.radius * sphere.radius) - odSquare);
+			float t0 = dp - tca;
+			if (t0 <= ray.min || t0 > ray.max)
 			{
-				D = sqrt(D);
-				float t1, t2;
-				t1 = (-B + D) / (2 * A);
-				t2 = (-B - D) / (2 * A);
-
-				if (t1 < 0.f && t2 < 0.f)
-				{
-					return false;
-				}
-				if ((t1 > t2 || t1 < 0) && t2 > 0)
-				{
-					hitRecord.t = t2; // take closest hit
-				}
-				else
-				{
-					hitRecord.t = t1;
-				}
-				if (ray.min < hitRecord.t && hitRecord.t < ray.max)
-				{
-					if (ignoreHitRecord == true)
-					{
-						return true;
-					}
-					hitRecord.didHit = true;
-					hitRecord.origin = ray.origin + (ray.direction * hitRecord.t);
-					hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
-					hitRecord.materialIndex = sphere.materialIndex;
-					return true;
-				}
+				return false;
 			}
-			return false;
+			if (ignoreHitRecord == true)
+			{
+				return true;
+			}
+			 Vector3 l1 = ray.origin + t0 * ray.direction;
+			 hitRecord.t = t0;
+			 hitRecord.didHit = true;
+			 hitRecord.origin = l1;
+			 hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
+			 hitRecord.materialIndex = sphere.materialIndex;
+			 return true;
+
+
+			//--------------------------------------------------------------------------------------------------------------------
+
+
+			//float A = (Vector3::Dot(ray.direction, ray.direction));
+			//float B = (Vector3::Dot((2 * ray.direction), ray.origin - sphere.origin));
+			//float C = (Vector3::Dot((ray.origin - sphere.origin), (ray.origin - sphere.origin)) - (sphere.radius * sphere.radius));
+			//float D = ((B * B) - (4 * A * C));
+			//// D == 0 means 1 hit 
+			//if (AreEqual(D, 0.f))
+			//{
+			//	hitRecord.t = -B / (2 * A);
+			//	if (ray.min < hitRecord.t && hitRecord.t < ray.max)
+			//	{
+			//		if (ignoreHitRecord == true)
+			//		{
+			//			return true;
+			//		}
+			//		hitRecord.didHit = true;
+			//		hitRecord.origin = ray.origin + (ray.direction * hitRecord.t);
+			//		hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
+			//		hitRecord.materialIndex = sphere.materialIndex;
+			//		return true;
+			//	}
+
+
+			//}
+			//else if (D > 0.f) // check if hit 
+			//{
+			//	D = sqrt(D);
+			//	float t1, t2;
+			//	t1 = (-B + D) / (2 * A);
+			//	t2 = (-B - D) / (2 * A);
+
+			//	if (t1 < 0.f && t2 < 0.f)
+			//	{
+			//		return false;
+			//	}
+			//	if ((t1 > t2 || t1 < 0) && t2 > 0)
+			//	{
+			//		hitRecord.t = t2; // take closest hit
+			//	}
+			//	else
+			//	{
+			//		hitRecord.t = t1;
+			//	}
+			//	if (ray.min < hitRecord.t && hitRecord.t < ray.max)
+			//	{
+			//		if (ignoreHitRecord == true)
+			//		{
+			//			return true;
+			//		}
+			//		hitRecord.didHit = true;
+			//		hitRecord.origin = ray.origin + (ray.direction * hitRecord.t);
+			//		hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
+			//		hitRecord.materialIndex = sphere.materialIndex;
+			//		return true;
+			//	}
+			//}
+			//return false;
 		}
 
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray)
