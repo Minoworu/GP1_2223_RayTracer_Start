@@ -157,9 +157,9 @@ namespace dae
 			{
 				transformedPositions.emplace_back(SRT.TransformPoint(p));
 			}
-			for (size_t i = 0; i < normals.size(); ++i)
+			for (auto& n : normals)
 			{
-				transformedNormals.emplace_back(SRT.TransformVector(normals[i]).Normalized()); 
+				transformedNormals.emplace_back(SRT.TransformVector(n.Normalized())); 
 			}
 			UpdateTransformedAABB(SRT);
 			/*const auto finalTransform = ...

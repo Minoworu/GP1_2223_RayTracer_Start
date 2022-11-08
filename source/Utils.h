@@ -142,7 +142,6 @@ namespace dae
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//todo W5
-		
 			float viewDot = Vector3::Dot(triangle.normal, ray.direction);
 			if (-FLT_EPSILON < viewDot && viewDot < FLT_EPSILON)
 			{
