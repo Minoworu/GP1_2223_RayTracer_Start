@@ -159,7 +159,7 @@ namespace dae
 			}
 			for (auto& n : normals)
 			{
-				transformedNormals.emplace_back(SRT.TransformVector(n.Normalized())); 
+				transformedNormals.emplace_back(SRT.TransformVector(n).Normalized());
 			}
 			UpdateTransformedAABB(SRT);
 			/*const auto finalTransform = ...
