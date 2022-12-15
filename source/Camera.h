@@ -58,18 +58,24 @@ namespace dae
 
 			//Keyboard Input
 			const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
+			const uint8_t* pSprintState = SDL_GetKeyboardState(nullptr);
 
 			//Mouse Input
 			int mouseX{}, mouseY{};
 			const uint32_t mouseState = SDL_GetRelativeMouseState(&mouseX, &mouseY);
 
 			// FORWARD / BACKWARD INPUT 
-			origin += forward * speed * pKeyboardState[SDL_SCANCODE_W] * deltaTime;
-			origin += forward * -speed * pKeyboardState[SDL_SCANCODE_S] * deltaTime;
-
+			origin += forward * speed * (pKeyboardState[SDL_SCANCODE_W] || pKeyboardState[SDL_SCANCODE_UP]) * deltaTime;
+			origin += forward * -speed * (pKeyboardState[SDL_SCANCODE_S] || pKeyboardState[SDL_SCANCODE_DOWN]) * deltaTime;
+			if (mouseState == SDL_BUTTON_LMASK)
+			{
+				// using delta time is a bit clunky for mouse movement.
+				origin += forward * speed * float(mouseX) * 0.05f;
+				origin += forward * -speed * float(mouseY) * 0.05f;
+			}
 			// SIDEWAY INPUT
-			origin += right * speed * pKeyboardState[SDL_SCANCODE_D] * deltaTime;
-			origin += right * -speed * pKeyboardState[SDL_SCANCODE_A] * deltaTime;
+			origin += right * speed * (pKeyboardState[SDL_SCANCODE_D]|| pKeyboardState[SDL_SCANCODE_RIGHT]) * deltaTime;
+			origin += right * -speed * (pKeyboardState[SDL_SCANCODE_A] || pKeyboardState[SDL_SCANCODE_LEFT]) * deltaTime;
 
 			// VERTICAL INPUT
 			if (mouseState == (SDL_BUTTON_LMASK | SDL_BUTTON_RMASK))
@@ -79,7 +85,7 @@ namespace dae
 			}
 			// ROTATION
 			//https://stackoverflow.com/questions/71030102/how-to-detect-if-left-mousebutton-is-being-held-down-with-sdl2
-			if (mouseState == SDL_BUTTON_LMASK)
+			if (mouseState == SDL_BUTTON_RMASK)
 			{
 				totalPitch += -mouseY * (rotationSpeed) * 0.05f;
 				totalYaw += mouseX * (rotationSpeed) * 0.05f;
